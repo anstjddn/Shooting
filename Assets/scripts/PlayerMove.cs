@@ -14,16 +14,19 @@ public class PlayerMove : MonoBehaviour
     private CharacterController controller;
     private Vector3 movedir;
     private float yspeed = 0;
+    public Animator anim;
 
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
-   
+        anim = GetComponent<Animator>();
+
     }
     private void Update()
     {
         Move();
         Jump();
+        
     }
     private void Move()
     {   // 아래 코드는 월드 기준 움직임
@@ -38,7 +41,15 @@ public class PlayerMove : MonoBehaviour
     {
         Vector2 input = value.Get<Vector2>();
         movedir = new Vector3(input.x, 0, input.y);
-      
+        if( Mathf.Abs(movedir.x) > 0 || Mathf.Abs(movedir.z) > 0)
+        {
+            anim.SetBool("movemove", true);
+        }
+        else anim.SetBool("movemove", false);
+
+
+
+
     }
     private void Jump()
     {
