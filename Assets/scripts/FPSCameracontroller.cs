@@ -37,4 +37,5 @@ public class FPSCameracontroller : MonoBehaviour
     {
         lookDelta = value.Get<Vector2>();
     }
+
 }

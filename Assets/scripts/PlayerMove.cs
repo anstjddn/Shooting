@@ -18,6 +18,7 @@ public class PlayerMove : MonoBehaviour
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+   
     }
     private void Update()
     {
@@ -25,14 +26,19 @@ public class PlayerMove : MonoBehaviour
         Jump();
     }
     private void Move()
-    {
-        controller.Move(movedir*Movespeed* Time.deltaTime);     // 델타타임- 단위시간(    /s  )
+    {   // 아래 코드는 월드 기준 움직임
+        // controller.Move(movedir*Movespeed* Time.deltaTime);     // 델타타임- 단위시간(    /s  )
         // 캐릭터 컨트롤러는 리지드바디 사용X 외부에서 힘받는걸 없앨려고 따라서 따로 설정해야된다.
+        // 아래는 내가 바라보는 기준으로 움직임
+        controller.Move(transform.forward *movedir.z* Movespeed * Time.deltaTime);
+        controller.Move(transform.right * movedir.x * Movespeed * Time.deltaTime);
+  
     }
     private void OnMove(InputValue value)
     {
         Vector2 input = value.Get<Vector2>();
         movedir = new Vector3(input.x, 0, input.y);
+      
     }
     private void Jump()
     {
