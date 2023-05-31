@@ -1,3 +1,4 @@
+using Cinemachine.Utility;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ public class TPSCameracontroller : MonoBehaviour
     [SerializeField] Transform CameraRoot;
     [SerializeField] float CameraS;
     [SerializeField] float lookdistance;
+    //[SerializeField] Transform Target;
     private float xRotation;
     private float yRotation;
     private Vector2 lookDelta;
@@ -34,6 +36,7 @@ public class TPSCameracontroller : MonoBehaviour
     {
 
         Vector3 lookpoint = Camera.main.transform.position + Camera.main.transform.forward * lookdistance;
+       // Target.position = lookpoint;
         lookpoint.y = transform.position.y;
         transform.LookAt(lookpoint);
     }
