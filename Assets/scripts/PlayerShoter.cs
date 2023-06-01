@@ -11,13 +11,13 @@ public class PlayerShoter : MonoBehaviour
     [SerializeField] Rig aimrig;
     [SerializeField] WeaponHolder weaponHolder;
 
-
     private Animator anim;
     private bool isReloading;
     private void Awake()
     {
         anim= GetComponent<Animator>();
-       
+
+
     }
     private void OnReload(InputValue Value) 
     {
