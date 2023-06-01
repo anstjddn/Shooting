@@ -47,7 +47,9 @@ public class Gun : MonoBehaviour
 
             yield return null;
         }
+
         Destroy(trail);
+        Destroy(trail.gameObject,1);
 
 
     }
