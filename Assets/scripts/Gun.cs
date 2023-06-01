@@ -49,7 +49,7 @@ public class Gun : MonoBehaviour
         }
 
         Destroy(trail);
-        Destroy(trail.gameObject,1);
+        Destroy(trail.gameObject);
 
 
     }
