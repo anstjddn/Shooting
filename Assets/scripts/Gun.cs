@@ -22,20 +22,21 @@ public class Gun : MonoBehaviour
             effect.transform.parent = hit.transform;
             Destroy(effect.gameObject, 3f);
             // identity= 회전이 없다
-            TrailRenderer trail = Instantiate(BulletTrail, muzzeffect.transform.position, Quaternion.identity);
-            StartCoroutine(TrailRoutine(trail,muzzeffect.transform.position,hit.point));
-            Destroy(trail.gameObject, 3f);
+            
+            StartCoroutine(TrailRoutine(muzzeffect.transform.position,hit.point));
+         
             hitable?.Hit(hit, damage);
         }
         else
         {
-            TrailRenderer trail = Instantiate(BulletTrail, muzzeffect.transform.position, Quaternion.identity);
-            StartCoroutine(TrailRoutine(trail, muzzeffect.transform.position, Camera.main.transform.forward*maxdistance));
-            Destroy(trail.gameObject, 3f);
+          
+            StartCoroutine(TrailRoutine( muzzeffect.transform.position, Camera.main.transform.forward*maxdistance));
+         
         }
    }
-    IEnumerator TrailRoutine(TrailRenderer trail, Vector3 startpoint, Vector3 endpoint)
+    IEnumerator TrailRoutine(Vector3 startpoint, Vector3 endpoint)
     {
+        TrailRenderer trail = Instantiate(BulletTrail, muzzeffect.transform.position, Quaternion.identity);
         float totaltime = Vector2.Distance(startpoint, endpoint) / Bulletspeed;
 
         float rate = 0;
@@ -46,6 +47,7 @@ public class Gun : MonoBehaviour
 
             yield return null;
         }
+        Destroy(trail);
 
 
     }
