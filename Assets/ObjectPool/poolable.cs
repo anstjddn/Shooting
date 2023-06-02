@@ -6,8 +6,8 @@ public class poolable : MonoBehaviour
 {           // 빌려지는애
     [SerializeField] float releaseTime;
 
-    private ObjectPool pool;
-    public ObjectPool Pool { get { return pool; } set { pool = value; } }
+    private ObjectPooling.ObjectPool pool;
+    public ObjectPooling.ObjectPool Pool { get { return pool; } set { pool = value; } }
 
 
     private void OnEnable()
