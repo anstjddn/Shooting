@@ -7,81 +7,117 @@ using static UnityEngine.UI.Image;
 
 public class PoolManager : MonoBehaviour
 {
-    Dictionary<string, ObjectPool<GameObject>> pooldic;
+    Dictionary<string, ObjectPool<GameObject>> poolDic;
+    Dictionary<string, Transform> poolContainer;
+    Transform poolRoot;
 
     private void Awake()
     {
-        pooldic = new Dictionary<string, ObjectPool<GameObject>>();
+        poolDic = new Dictionary<string, ObjectPool<GameObject>>();
+        poolContainer = new Dictionary<string, Transform>();
+        poolRoot = new GameObject("PoolRoot").transform;
     }
 
-    public T Get<T>(T original, Vector3 position, Quaternion rotation) where T : Object
+    public T Get<T>(T original, Vector3 position, Quaternion rotation, Transform parent) where T : Object
     {
-        if(original is GameObject)
+        if (original is GameObject)
         {
             GameObject prefab = original as GameObject;
-            if (!pooldic.ContainsKey(prefab.name))
-                CreatePool(prefab.name, prefab);
+            string key = prefab.name;
 
-            ObjectPool<GameObject> pool = pooldic[prefab.name];
-            GameObject go = pool.Get();
-            go.transform.position = position;
-            go.transform.rotation = rotation;
-            return go as T;
+            if (!poolDic.ContainsKey(key))
+                CreatePool(key, prefab);
+
+            GameObject obj = poolDic[key].Get();
+            obj.transform.parent = parent;
+            obj.transform.position = position;
+            obj.transform.rotation = rotation;
+            return obj as T;
         }
         else if (original is Component)
         {
             Component component = original as Component;
             string key = component.gameObject.name;
-            if (!pooldic.ContainsKey(key))
+
+            if (!poolDic.ContainsKey(key))
                 CreatePool(key, component.gameObject);
 
-            GameObject go = pooldic[key].Get();
-            go.transform.position = position;
-            go.transform.rotation = rotation;
-            return go.GetComponent<T>();
-
+            GameObject obj = poolDic[key].Get();
+            obj.transform.parent = parent;
+            obj.transform.position = position;
+            obj.transform.rotation = rotation;
+            return obj.GetComponent<T>();
         }
         else
         {
             return null;
         }
     }
-    /* public GameObject Get(GameObject prefab, Vector3 position, Quaternion rotation)
-     {
-         if (!pooldic.ContainsKey(prefab.name))
-             CreatePool(prefab.name, prefab);
 
-         ObjectPool<GameObject> pool = pooldic[prefab.name];
-         GameObject go = pool.Get();
-         go.transform.position = position;
-         go.transform.rotation = rotation;
-         return go;
-     }*/
-    public T Get<T>(T original) where T : Object
+    public T Get<T>(T original, Vector3 position, Quaternion rotation) where T : Object
     {
-
-        return Get<T>(original, Vector3.zero, Quaternion.identity);
+        return Get<T>(original, position, rotation, null);
     }
 
-    public bool IsContain<T>(T origianl) where T : Object
+    public T Get<T>(T original, Transform parent) where T : Object
     {
-        if (origianl is GameObject)
+        return Get<T>(original, Vector3.zero, Quaternion.identity, parent);
+    }
+
+    public T Get<T>(T original) where T : Object
+    {
+        return Get<T>(original, Vector3.zero, Quaternion.identity, null);
+    }
+
+    public bool Release<T>(T instance) where T : Object
+    {
+        if (instance is GameObject)
         {
-            GameObject prefab = origianl as GameObject;
+            GameObject go = instance as GameObject;
+            string key = go.name;
+
+            if (!poolDic.ContainsKey(key))
+                return false;
+
+            poolDic[key].Release(go);               // 유니티 자체기능
+            return true;
+        }
+        else if (instance is Component)
+        {
+            Component component = instance as Component;
+            string key = component.gameObject.name;
+
+            if (!poolDic.ContainsKey(key))
+                return false;
+
+            poolDic[key].Release(component.gameObject);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool IsContain<T>(T original) where T : Object
+    {
+        if (original is GameObject)
+        {
+            GameObject prefab = original as GameObject;
             string key = prefab.name;
 
-            if (pooldic.ContainsKey(key))
+            if (poolDic.ContainsKey(key))
                 return true;
             else
                 return false;
 
         }
-        else if (origianl is Component)
+        else if (original is Component)
         {
-            Component component = origianl as Component;
+            Component component = original as Component;
             string key = component.gameObject.name;
 
-            if (pooldic.ContainsKey(key))
+            if (poolDic.ContainsKey(key))
                 return true;
             else
                 return false;
@@ -91,41 +127,36 @@ public class PoolManager : MonoBehaviour
             return false;
         }
     }
-    public bool Release(GameObject go)     // 풀매니저 release
+
+    private void CreatePool(string key, GameObject prefab)
     {
-        if (!pooldic.ContainsKey(go.name))
-            return false;
-        ObjectPool<GameObject> pool = pooldic[go.name];
-        pool.Release(go);             // 유니티 자체기능
-        return true;
-    }
-    public void CreatePool(string key, GameObject prefab)
-    {                                       // d오브젝트 풀 만들때 4가지 함수 필요함
-        ObjectPool<GameObject> pool = new ObjectPool<GameObject>(
-            createFunc: () =>                           // 생성
+        GameObject root = new GameObject();
+        root.gameObject.name = $"{key}Container";
+        root.transform.parent = poolRoot;
+        poolContainer.Add(key, root.transform);
+
+        ObjectPool<GameObject> pool = new ObjectPool<GameObject>(           // 유니티 자체기능인데 4가지 함수 설정필요
+            createFunc: () =>                                   //생성
             {
-                GameObject go = Instantiate(prefab);
-                go.name = key;
-                return go;
+                GameObject obj = Instantiate(prefab);
+                obj.gameObject.name = key;
+                return obj;
             },
-            actionOnGet: (GameObject go) =>             //대여
+            actionOnGet: (GameObject obj) =>                    // 대여
             {
-                go.SetActive(true);
-                go.transform.SetParent(null);
+                obj.gameObject.SetActive(true);
+                obj.transform.parent = null;
             },
-            actionOnRelease: (GameObject go) =>           //반납
+            actionOnRelease: (GameObject obj) =>                        //반납
             {
-                go.SetActive(false);
-                go.transform.SetParent(transform);
+                obj.gameObject.SetActive(false);
+                obj.transform.parent = poolContainer[key];
             },
-            actionOnDestroy: (GameObject go) =>             // 삭제
+            actionOnDestroy: (GameObject obj) =>                        //삭제 
             {
-                Destroy(go);
+                Destroy(obj);
             }
             );
-
-        pooldic.Add(key, pool);
-
-
+        poolDic.Add(key, pool);
     }
 }

@@ -4,27 +4,30 @@ using UnityEngine;
 
 public class Gun : MonoBehaviour
 {
-
-    [SerializeField] GameObject hiteffect;
+    //[SerializeField] GameObject hiteffect;
     [SerializeField] ParticleSystem muzzeffect;
     [SerializeField] GameObject BulletTrail;
     [SerializeField] float maxdistance;
     [SerializeField] int damage;
     [SerializeField] float Bulletspeed;
 
-   public void Fire()
+    [SerializeField] ParticleSystem bulletEffect;
+
+
+    public void Fire()
    {
         muzzeffect.Play();
         RaycastHit hit;
         if (Physics.Raycast(Camera.main.transform.position, Camera.main.transform.forward, out hit, maxdistance))
         {
             IHitable hitable = hit.transform.GetComponent<IHitable>(); //컴포넌트 얻는데다가 인터페이스를 넣어도 찾을수있다.
-            GameObject effect = GameManager.Pool.Get(hiteffect, hit.point, Quaternion.LookRotation(hit.normal));
-            // ParticleSystem effect= Instantiate(hiteffect, hit.point, Quaternion.LookRotation(hit.normal));
+                                                                       //  GameObject effect = GameManager.Pool.Get(hiteffect, hit.point, Quaternion.LookRotation(hit.normal));
+            ParticleSystem effect = GameManager.Resource.Instantiate<ParticleSystem>("prifabs/HitEffect", hit.point, Quaternion.LookRotation(hit.normal), true);
+            //  ParticleSystem effect= Instantiate(hiteffect, hit.point, Quaternion.LookRotation(hit.normal));
 
-            effect.transform.parent = hit.transform;
-            StartCoroutine(ReleaseRoutin(effect));
-           // Destroy(effect.gameObject, 3f);
+            // effect.transform.parent = hit.transform;
+          //  StartCoroutine(ReleaseRoutin(effect));
+        
             // identity= 회전이 없다
             
             StartCoroutine(TrailRoutine(muzzeffect.transform.position,hit.point));
