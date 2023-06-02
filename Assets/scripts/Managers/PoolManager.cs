@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
+using static UnityEngine.UI.Image;
 
 
 public class PoolManager : MonoBehaviour
@@ -62,6 +63,34 @@ public class PoolManager : MonoBehaviour
         return Get<T>(original, Vector3.zero, Quaternion.identity);
     }
 
+    public bool IsContain<T>(T origianl) where T : Object
+    {
+        if (origianl is GameObject)
+        {
+            GameObject prefab = origianl as GameObject;
+            string key = prefab.name;
+
+            if (pooldic.ContainsKey(key))
+                return true;
+            else
+                return false;
+
+        }
+        else if (origianl is Component)
+        {
+            Component component = origianl as Component;
+            string key = component.gameObject.name;
+
+            if (pooldic.ContainsKey(key))
+                return true;
+            else
+                return false;
+        }
+        else
+        {
+            return false;
+        }
+    }
     public bool Release(GameObject go)     // 풀매니저 release
     {
         if (!pooldic.ContainsKey(go.name))
